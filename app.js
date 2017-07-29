@@ -1,37 +1,92 @@
-const express = require('express')
-const app = express()
-const bodyParser = require('body-parser')
-const port = process.env.PORT || 3000
+const express     = require('express'),
+      app         = express(),
+      bodyParser  = require('body-parser'),
+      mongoose    = require('mongoose'),
+      port        = process.env.PORT || 3000, 
+      Lake        = require("./models/lake"), 
+      seedsDB     = require("./seed"), 
+      Comments    = require("./models/comment")
 
+seedsDB(); 
+
+mongoose.connect("mongodb://localhost/lakes", {useMongoClient: true})
 app.use(bodyParser.urlencoded({extended: true}))
-
 app.set("view engine", "ejs")
-
-let lakes = [
-  {name: "Lake Chabot", url: "http://www.timfiebig.com/uploads/agent-1/CV%20lake%20chabot.jpg"}, 
-  {name: "Freemont Lake", url: "http://www.visitpinedale.org/cache/made/images/lakes/fremont-lake/upper-fremont-lake_760_506_76auto.jpg"}, 
-  {name: "Lake Merrit", url: "https://s-media-cache-ak0.pinimg.com/originals/ce/a3/6d/cea36d4036a6fd344411229a53a7a0e8.jpg"}
-]
+app.use(express.static(__dirname + "/public"))
 
 app.get("/", (req, res) => {
   res.render("landing")
 })
 
 app.get("/lakes", (req, res) => {
-  res.render("lakes", {lakes: lakes})
+  Lake.find({}, (err, lakes) => {
+    if(err) {
+      console.log('There was an error: ', err)
+    } else {
+      res.render("lakes/index", {lakes: lakes})
+    }
+  })
 })
 
 app.get("/lakes/new", (req, res) => {
-  res.render("new")
+  res.render("lakes/new")
+})
+
+app.get("/lakes/:id", (req, res) => {
+  Lake.findById(req.params.id).populate('comments').exec((err, found) => {
+    if(err) {
+      console.log("There was an error: ", err)
+    } else {
+      res.render("lakes/show", {lake: found})
+    }
+  })
 })
 
 app.post("/lakes", (req, res) => {
   let name = req.body.name
   let url = req.body.url
-  console.log(name, url)
-  lakes.push({name: name, url: url})
-  res.redirect("/lakes")
+  let description = req.body.description
+  let newLake = {name: name, url: url, description: description}
+  Lake.create(newLake, (err) => {
+    if(err) {
+      console.log("There was an error, here is the error: ", err)
+    } else {
+      res.redirect("/lakes")
+    }
+  })
 });
+
+app.get("/lakes/:id/comments/new", (req, res) => {
+  Lake.findById(req.params.id, (err, lake) => {
+    if(err) {
+      console.log("There was an error: ", err)
+    } else {
+      res.render("comments/new", {lake: lake})
+    }
+  })
+})
+
+app.post("/lakes/:id/comments", (req, res) => {
+  Lake.findById(req.params.id, (err, lake) => {
+    if (err) {
+      console.log("There was an error: ", err)
+      alert('There was an error in adding the comment!')
+      res.redirect('/lakes')
+    } else {
+      Comments.create(req.body.comment, (err, comment) => {
+        if (err) {
+          console.log(err)
+          alert('There was an error in adding the comment!')
+          res.redirect('/lakes')
+        } else {
+          lake.comments.push(comment)
+          lake.save()
+          res.redirect("/lakes/" + req.params.id)
+        }
+      })
+    }
+  })
+})
 
 app.listen(port, () => {
   console.log(`Listening on ${port}`)
