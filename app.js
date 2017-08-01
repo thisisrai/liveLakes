@@ -1,11 +1,15 @@
-const express     = require('express'),
-      app         = express(),
-      bodyParser  = require('body-parser'),
-      mongoose    = require('mongoose'),
-      port        = process.env.PORT || 3000, 
-      Lake        = require("./models/lake"), 
-      seedsDB     = require("./seed"), 
-      Comments    = require("./models/comment")
+const express         = require('express'),
+      app             = express(),
+      bodyParser      = require('body-parser'),
+      mongoose        = require('mongoose'),
+      port            = process.env.PORT || 3000, 
+      Lake            = require("./models/lake"), 
+      seedsDB         = require("./seed"), 
+      Comments        = require("./models/comment")
+      passport        = require("passport")
+      localStrategy   = require("passport-local")
+      User            = require("./models/user")
+      expressSession  = require("express-session")
 
 seedsDB(); 
 
@@ -13,6 +17,22 @@ mongoose.connect("mongodb://localhost/lakes", {useMongoClient: true})
 app.use(bodyParser.urlencoded({extended: true}))
 app.set("view engine", "ejs")
 app.use(express.static(__dirname + "/public"))
+app.use(expressSession({
+  secret: "Visit Lakes!", 
+  resave: false, 
+  saveUninitialized: false
+}))
+
+app.use(passport.initialize())
+app.use(passport.session())
+passport.use(new localStrategy(User.authenticate()))
+passport.serializeUser(User.serializeUser())
+passport.deserializeUser(User.deserializeUser())
+
+app.use(function(req, res, next){
+  res.locals.currentUser = req.user
+  next(); 
+})
 
 app.get("/", (req, res) => {
   res.render("landing")
@@ -31,6 +51,7 @@ app.get("/lakes", (req, res) => {
 app.get("/lakes/new", (req, res) => {
   res.render("lakes/new")
 })
+
 
 app.get("/lakes/:id", (req, res) => {
   Lake.findById(req.params.id).populate('comments').exec((err, found) => {
@@ -56,7 +77,7 @@ app.post("/lakes", (req, res) => {
   })
 });
 
-app.get("/lakes/:id/comments/new", (req, res) => {
+app.get("/lakes/:id/comments/new", isLoggedIn, (req, res) => {
   Lake.findById(req.params.id, (err, lake) => {
     if(err) {
       console.log("There was an error: ", err)
@@ -66,7 +87,7 @@ app.get("/lakes/:id/comments/new", (req, res) => {
   })
 })
 
-app.post("/lakes/:id/comments", (req, res) => {
+app.post("/lakes/:id/comments", isLoggedIn, (req, res) => {
   Lake.findById(req.params.id, (err, lake) => {
     if (err) {
       console.log("There was an error: ", err)
@@ -87,6 +108,45 @@ app.post("/lakes/:id/comments", (req, res) => {
     }
   })
 })
+
+app.get("/register", (req, res) => {
+  res.render("register")
+})
+
+app.post("/register", (req, res) => {
+  const newUser = new User({username: req.body.username})
+  User.register(newUser, req.body.password, (err, user) => {
+    if(err){
+      console.log(err)
+      return res.render("register")
+    }
+    passport.authenticate("local")(req, res, () => {
+      res.redirect("/lakes")
+    })
+  })
+})
+
+app.get("/login", (req, res) => {
+  res.render("login")
+})
+
+app.post("/login", passport.authenticate("local", {
+    successRedirect: "/lakes", 
+    failureRedirect: "/login"
+  }), (req, res) => {
+})
+
+app.get("/logout", (req, res) => {
+  req.logout()
+  res.redirect("/lakes")
+})
+
+function isLoggedIn(req, res, next){
+  if(req.isAuthenticated()){
+    return next()
+  }
+  res.redirect("/login")
+}
 
 app.listen(port, () => {
   console.log(`Listening on ${port}`)
