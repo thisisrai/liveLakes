@@ -18,7 +18,7 @@ const express         = require('express'),
 
 // seedsDB(); 
 
-mongoose.connect("mongodb://localhost/places", {useMongoClient: true})
+mongoose.connect("mongodb://railee:coolplace123@ds135963.mlab.com:35963/heroku_1gn9bmcw", {useMongoClient: true})
 app.use(bodyParser.urlencoded({extended: true}))
 app.set("view engine", "ejs")
 app.use(methodOverride("_method"))
