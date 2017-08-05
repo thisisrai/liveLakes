@@ -1,0 +1,59 @@
+<% include ../partials/headers %>
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      <p class="lead">Cool Places</p>
+      <div class="list-group">
+        <li class="list-group-item active">Info</li>
+      </div>
+    </div>
+    <div class="col-md-9">
+      <div class="thumbnail">
+        <img class="img-responsive" src="<%= place.url %>" alt="">
+        <div class="caption-full">
+          <h4 class="pull-right">$<%=place.price%>/visit</h4>
+          <h4><a href=""><%= place.name %></a></h4>
+          <p><%= place.description %></p>
+          <p><em>Submitted by <%= place.author.username %></em></p>
+          <% if ( currentUser && place.author.id.equals(currentUser._id)) { %>
+          <a class="btn btn-warning" href="/places/<%= place._id%>/edit">Edit</a>
+          <form id="delete-form" action="/places/<%= place._id%>?_method=DELETE" method="post">
+            <button class="btn btn-danger">Delete</button>
+          </form>
+          <% } %>
+        </div>
+      </div>
+      <div class="well">
+        <div class="text-right">
+          <a class="btn btn-primary" href="/places/<%= place._id%>/comments/new">Add Comment</a>
+        </div>
+        <hr>
+        <% place.comments.forEach(comment => { %>
+          <div class="row">
+            <div class="col-md-12">
+              <strong><%= comment.author.username %></strong>
+              <span class="pull-right">10 days ago</span>
+              <p>
+                <%= comment.text %>
+              </p>
+              <% if ( currentUser && comment.author.id.equals(currentUser._id)) { %>
+              <a class="btn btn-xs btn-warning" href="/places/<%= place._id%>/comments/<%= comment._id%>/edit">Edit</a>
+              <form id="commentDelete" action="/places/<%= place._id%>/comments/<%= comment._id%>?_method=DELETE" method="POST">
+                <button class="btn btn-xs btn-danger" >Delete</button>
+              </form>
+              <% } %>
+            </div>
+          </div>
+        <% })%>
+        
+
+        
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<% include ../partials/footer %>

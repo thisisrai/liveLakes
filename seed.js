@@ -1,5 +1,5 @@
 const mongoose = require("mongoose")
-const Lake = require("./models/lake")
+const Place = require("./models/place")
 const Comment = require("./models/comment")
 
 const data = [
@@ -24,35 +24,7 @@ const data = [
 ]
 
 function seedsDB () {
-  Lake.remove({}, (err) => {
-    // if (err) {
-    //   console.log(err)
-    // } else {
-    //   console.log('Removed lakes!')
-    //   data.forEach(data => {
-    //     Lake.create(data, (err, created) => {
-    //       if (err) {
-    //         console.log(err)
-    //       } else {
-    //         console.log('created new lake!')
-    //         Comment.create(
-    //           {
-    //             text: "This is a great lake!!!", 
-    //             author: "Rai Lee"
-    //           }, (err, comment) => {
-    //             if (err) {
-    //               console.log(err)
-    //             } else {
-    //               created.comments.push(comment)
-    //               created.save()
-    //               console.log("created new comment")
-    //             }
-    //           }
-    //         )
-    //       }
-    //     })
-    //   })
-    // }
+  Place.remove({}, (err) => {
   })
 }
 

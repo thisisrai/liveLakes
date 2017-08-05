@@ -1,7 +1,8 @@
 const mongoose = require("mongoose")
 
-let lakeSchema = new mongoose.Schema({
-  name: String, 
+let placeSchema = new mongoose.Schema({
+  name: String,
+  price: String,  
   url: String, 
   description: String, 
   author: {
@@ -19,4 +20,4 @@ let lakeSchema = new mongoose.Schema({
   ]
 })
 
-module.exports = mongoose.model("Lake", lakeSchema)
+module.exports = mongoose.model("Place", placeSchema)

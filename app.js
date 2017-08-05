@@ -3,21 +3,22 @@ const express         = require('express'),
       bodyParser      = require('body-parser'),
       mongoose        = require('mongoose'),
       port            = process.env.PORT || 3000, 
-      Lake            = require("./models/lake"), 
+      Place            = require("./models/place"), 
       seedsDB         = require("./seed"), 
       Comments        = require("./models/comment"), 
       passport        = require("passport"), 
       methodOverride  = require("method-override")
       localStrategy   = require("passport-local"), 
+      flash           = require("connect-flash")
       User            = require("./models/user"), 
       expressSession  = require("express-session"), 
       indexRoutes     = require("./routes/index"), 
-      lakesRoutes     = require("./routes/lakes"), 
+      placesRoutes     = require("./routes/places"), 
       commentsRoutes  = require("./routes/comments")
 
 // seedsDB(); 
 
-mongoose.connect("mongodb://localhost/lakes", {useMongoClient: true})
+mongoose.connect("mongodb://localhost/places", {useMongoClient: true})
 app.use(bodyParser.urlencoded({extended: true}))
 app.set("view engine", "ejs")
 app.use(methodOverride("_method"))
@@ -34,14 +35,19 @@ passport.use(new localStrategy(User.authenticate()))
 passport.serializeUser(User.serializeUser())
 passport.deserializeUser(User.deserializeUser())
 
+app.use(flash())
+
 app.use(function(req, res, next){
   res.locals.currentUser = req.user
+  res.locals.error = req.flash("error")
+  res.locals.success = req.flash("success")
   next(); 
 })
 
+
 app.use(indexRoutes)
-app.use("/lakes", lakesRoutes)
-app.use("/lakes/:id/comments", commentsRoutes)
+app.use("/places", placesRoutes)
+app.use("/places/:id/comments", commentsRoutes)
 
 app.listen(port, () => {
   console.log(`Listening on ${port}`)

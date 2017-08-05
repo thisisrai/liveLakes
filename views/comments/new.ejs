@@ -2,9 +2,9 @@
 
 <div class="container">  
   <div class="row">
-    <h1 style="text-align: center;">Add New Comment to <%= lake.name %></h1>
+    <h1 style="text-align: center;">Add New Comment to <%= place.name %></h1>
     <div style="width: 30%; margin: 25px auto;">
-      <form action="/lakes/<%= lake._id%>/comments" method="POST">
+      <form action="/places/<%= place._id%>/comments" method="POST">
         <div class="form-group">
           <input class="form-control" type="text" name="comment[text]" placeholder="text">
         </div>
@@ -13,7 +13,7 @@
         </div>
       </form>
       <div style="text-align: center;">
-        <a href="/lakes">Go Back</a>
+        <a href="/places">Go Back</a>
       </div>
     </div>
   </div>

@@ -15,11 +15,12 @@ router.post("/register", (req, res) => {
   const newUser = new User({username: req.body.username})
   User.register(newUser, req.body.password, (err, user) => {
     if(err){
-      console.log(err)
-      return res.render("register")
+      req.flash("error", err.message)
+      res.redirect("register")
     }
     passport.authenticate("local")(req, res, () => {
-      res.redirect("/lakes")
+      req.flash("success", "Congrats on creating an account!")
+      res.redirect("/places")
     })
   })
 })
@@ -29,21 +30,15 @@ router.get("/login", (req, res) => {
 })
 
 router.post("/login", passport.authenticate("local", {
-    successRedirect: "/lakes", 
+    successRedirect: "/places",
     failureRedirect: "/login"
   }), (req, res) => {
 })
 
 router.get("/logout", (req, res) => {
   req.logout()
-  res.redirect("/lakes")
+  req.flash("success", "You logged out successfully!")
+  res.redirect("/places")
 })
-
-function isLoggedIn(req, res, next){
-  if(req.isAuthenticated()){
-    return next()
-  }
-  res.redirect("/login")
-}
 
 module.exports = router
